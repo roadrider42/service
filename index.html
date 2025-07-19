@@ -1,35 +1,262 @@
 <!DOCTYPE html>
 <html>
-  <!-- [Previous head content remains the same until the script tag] -->
-  <script>
-    // [Previous script content remains the same until setupDeepLinking function]
-
-    function setupDeepLinking(contentId) {
-      const userAgent = navigator.userAgent;
-      const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+  <head>
+    <title>WeLoveService - Shared Content</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      /* [Previous CSS remains exactly the same] */
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>📱 WeLoveService</h1>
+        <p>Geteilter Content</p>
+      </div>
       
-      if (contentId && isIOS) {
-        const openAppBtn = document.getElementById('open-app-btn');
-        if (openAppBtn) {
-          openAppBtn.style.display = 'block';
-          
-          // TestFlight deep link
-          const testFlightUrl = 'itms-beta://beta.itunes.apple.com/v1/app/6748683473';
-          openAppBtn.href = testFlightUrl;
-          
-          openAppBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = testFlightUrl;
+      <div class="content">
+        <!-- Loading State -->
+        <div id="loading-state" class="loading">
+          <p>🔄 Content wird geladen...</p>
+        </div>
+        
+        <!-- Error State -->
+        <div id="error-state" class="error" style="display: none;">
+          <p><strong>❌ Fehler:</strong> <span id="error-message"></span></p>
+        </div>
+        
+        <!-- Content Display -->
+        <div id="content-display" style="display: none;">
+          <div class="content-card">
+            <h2 id="content-title">Content Titel</h2>
+            <p id="content-description">Content Beschreibung</p>
             
-            // Fallback to App Store if needed
-            setTimeout(() => {
-              if (!document.hidden && !document.webkitHidden) {
-                window.location.href = 'https://apps.apple.com/app/6748683473';
-              }
-            }, 500);
+            <div>
+              <span id="content-price-badge" class="badge"></span>
+              <span id="content-type-badge" class="badge badge-free">Direct Access</span>
+            </div>
+            
+            <div id="content-media" class="media-grid"></div>
+            
+            <div id="content-quizzes"></div>
+            
+            <p><small><strong>Content ID:</strong> <span id="content-id"></span></small></p>
+          </div>
+          
+          <!-- App Download/Open Section -->
+          <div class="app-buttons">
+            <a href="#" id="open-app-btn" class="btn btn-primary" style="display: none;">
+              📱 In App öffnen
+            </a>
+            <a href="https://apps.apple.com/app/6748683473" id="download-app-btn" class="btn btn-secondary">
+              📲 App herunterladen
+            </a>
+          </div>
+        </div>
+        
+        <!-- Default State -->
+        <div id="default-state">
+          <h2>👋 Willkommen!</h2>
+          <p>Hier werden geteilte Inhalte angezeigt.</p>
+          <p>Verwenden Sie einen Link mit <code>?showContent=ID</code> um spezifischen Content zu sehen.</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Supabase Configuration
+      const SUPABASE_URL = 'https://feznzobbeiovplncvpjt.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlem56b2JiZWlvdnBsbmN2cGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzOTkzNTYsImV4cCI6MjA2Nzk3NTM1Nn0.xDBhUQRNFszhlkCiKUln6KdYgq2ACoyfvWE47z2G-Ew';
+      
+      // Initialize Supabase client
+      class SupabaseClient {
+        constructor(url, key) {
+          this.url = url;
+          this.key = key;
+        }
+        
+        async query(table, select = '*', filters = {}) {
+          const params = new URLSearchParams();
+          params.append('select', select);
+          
+          Object.entries(filters).forEach(([key, value]) => {
+            params.append(key, `eq.${value}`);
           });
+          
+          const response = await fetch(`${this.url}/rest/v1/${table}?${params}`, {
+            headers: {
+              'apikey': this.key,
+              'Authorization': `Bearer ${this.key}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          return await response.json();
         }
       }
-    }
-  </script>
+      
+      // Initialize client
+      const supabase = new SupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      
+      // DOM Elements
+      const loadingState = document.getElementById('loading-state');
+      const errorState = document.getElementById('error-state');
+      const contentDisplay = document.getElementById('content-display');
+      const defaultState = document.getElementById('default-state');
+      const openAppBtn = document.getElementById('open-app-btn');
+      
+      // Check URL parameters when page loads
+      window.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded');
+        const urlParams = new URLSearchParams(window.location.search);
+        const contentId = urlParams.get('showContent');
+        
+        if (contentId) {
+          console.log('Content ID found:', contentId);
+          loadContent(contentId);
+          setupDeepLinking(contentId);
+        } else {
+          console.log('No content ID found');
+          hideLoading();
+        }
+      });
+      
+      function hideLoading() {
+        console.log('Hiding loading state');
+        loadingState.style.display = 'none';
+      }
+      
+      function showError(message) {
+        console.error('Error:', message);
+        hideLoading();
+        document.getElementById('error-message').textContent = message;
+        errorState.style.display = 'block';
+        defaultState.style.display = 'none';
+      }
+      
+      function showContent(content, media = [], quizzes = []) {
+        console.log('Showing content:', content.id);
+        hideLoading();
+        defaultState.style.display = 'none';
+        
+        // Fill content data
+        document.getElementById('content-title').textContent = content.title;
+        document.getElementById('content-description').textContent = content.description || 'Keine Beschreibung verfügbar';
+        document.getElementById('content-id').textContent = content.id;
+        
+        // Price badge
+        const priceBadge = document.getElementById('content-price-badge');
+        if (content.is_paid) {
+          priceBadge.textContent = `€${(content.price_cents / 100).toFixed(2)}`;
+          priceBadge.className = 'badge badge-paid';
+        } else {
+          priceBadge.textContent = 'Kostenlos';
+          priceBadge.className = 'badge badge-free';
+        }
+        
+        // Media
+        const mediaContainer = document.getElementById('content-media');
+        mediaContainer.innerHTML = '';
+        if (media.length > 0) {
+          media.forEach(item => {
+            const mediaElement = document.createElement('div');
+            mediaElement.className = 'media-item';
+            
+            if (item.type === 'image') {
+              mediaElement.innerHTML = `<img src="${item.url}" alt="Content media" loading="lazy">`;
+            } else if (item.type === 'video') {
+              mediaElement.innerHTML = `<video src="${item.url}" controls></video>`;
+            }
+            
+            mediaContainer.appendChild(mediaElement);
+          });
+        }
+        
+        // Quizzes
+        const quizzesContainer = document.getElementById('content-quizzes');
+        if (quizzes.length > 0) {
+          quizzesContainer.innerHTML = `<p><strong>📝 ${quizzes.length} Quiz${quizzes.length !== 1 ? 'zes' : ''} verfügbar</strong></p>`;
+        }
+        
+        contentDisplay.style.display = 'block';
+      }
+      
+      async function loadContent(contentId) {
+        try {
+          console.log('Loading content:', contentId);
+          
+          // Load content data
+          const contentData = await supabase.query('contents', '*', { id: contentId });
+          
+          if (!contentData || contentData.length === 0) {
+            throw new Error('Content nicht gefunden');
+          }
+          
+          const content = contentData[0];
+          
+          // Load related media
+          let media = [];
+          try {
+            media = await supabase.query('media', '*', { content_id: contentId });
+          } catch (e) {
+            console.warn('Could not load media:', e);
+          }
+          
+          // Load related quizzes
+          let quizzes = [];
+          try {
+            quizzes = await supabase.query('quizzes', '*', { content_id: contentId });
+          } catch (e) {
+            console.warn('Could not load quizzes:', e);
+          }
+          
+          showContent(content, media, quizzes);
+          
+        } catch (error) {
+          console.error('Error loading content:', error);
+          showError(error.message || 'Content konnte nicht geladen werden');
+        }
+      }
+      
+      function setupDeepLinking(contentId) {
+        console.log('Setting up deep linking for content:', contentId);
+        const userAgent = navigator.userAgent;
+        const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+        
+        if (contentId && isIOS) {
+          console.log('iOS device detected, showing app open button');
+          const openAppBtn = document.getElementById('open-app-btn');
+          
+          if (openAppBtn) {
+            openAppBtn.style.display = 'block';
+            const testFlightUrl = 'itms-beta://beta.itunes.apple.com/v1/app/6748683473';
+            openAppBtn.href = testFlightUrl;
+            
+            openAppBtn.addEventListener('click', function(e) {
+              e.preventDefault();
+              console.log('Opening TestFlight...');
+              window.location.href = testFlightUrl;
+              
+              // Fallback to App Store if needed
+              setTimeout(() => {
+                if (!document.hidden && !document.webkitHidden) {
+                  console.log('Fallback to App Store');
+                  window.location.href = 'https://apps.apple.com/app/6748683473';
+                }
+              }, 500);
+            });
+          } else {
+            console.error('Open app button not found in DOM');
+          }
+        } else {
+          console.log('Deep linking not needed (not iOS or no content ID)');
+        }
+      }
+    </script>
+  </body>
 </html>
