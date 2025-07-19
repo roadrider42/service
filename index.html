@@ -6,5 +6,47 @@
   <body>
     <h1>Hallo Welt!</h1>
     <p>Das ist meine erste GitHub Pages Website.</p>
+    
+    <!-- Content wird hier angezeigt -->
+    <div id="content-display" style="display: none; margin-top: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 8px;">
+      <h2 id="content-title">Content wird geladen...</h2>
+      <p id="content-description">Beschreibung wird geladen...</p>
+      <p><strong>Content ID:</strong> <span id="content-id"></span></p>
+    </div>
+
+    <!-- JavaScript hier einfügen - vor dem schließenden </body> Tag -->
+    <script>
+      // Prüfe URL-Parameter beim Laden der Seite
+      window.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const contentId = urlParams.get('showContent');
+        
+        if (contentId) {
+          console.log('Content ID gefunden:', contentId);
+          showContent(contentId);
+        }
+      });
+
+      function showContent(contentId) {
+        // Content-Bereich anzeigen
+        const contentDiv = document.getElementById('content-display');
+        const titleElement = document.getElementById('content-title');
+        const descriptionElement = document.getElementById('content-description');
+        const idElement = document.getElementById('content-id');
+        
+        // Content-Informationen anzeigen
+        titleElement.textContent = 'Geteilter Content';
+        descriptionElement.textContent = 'Dieser Content wurde mit Ihnen geteilt!';
+        idElement.textContent = contentId;
+        
+        // Content-Bereich sichtbar machen
+        contentDiv.style.display = 'block';
+        
+        // Optional: Zur Content-Sektion scrollen
+        contentDiv.scrollIntoView({ behavior: 'smooth' });
+        
+        console.log('Content angezeigt:', contentId);
+      }
+    </script>
   </body>
 </html>
