@@ -333,37 +333,35 @@
         }
       }
       
-      function setupDeepLinking(contentId) {
-        // Check if user has the app installed
-        const userAgent = navigator.userAgent;
-        const isIOS = /iPad|iPhone|iPod/.test(userAgent);
-        const isAndroid = /Android/.test(userAgent);
-        
-        if (contentId && (isIOS || isAndroid)) {
-          // Show "Open in App" button
-          openAppBtn.style.display = 'block';
-          
-          // Setup deep link URL
-          const deepLinkUrl = `weloveservice://content/${contentId}`;
-          const fallbackUrl = isIOS 
-            ? 'https://apps.apple.com/app/weloveservice' 
-            : 'https://play.google.com/store/apps/details?id=com.weloveservice';
-          
-          openAppBtn.href = deepLinkUrl;
-          
-          // Handle app opening
-          openAppBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Try to open the app
-            window.location.href = deepLinkUrl;
-            
-            // Fallback: if app doesn't open in 2 seconds, redirect to store
-            setTimeout(() => {
-              if (document.hidden || document.webkitHidden) {
-                // App opened successfully
-                return;
-              }
+     function setupDeepLinking(contentId) {
+  // Check if user has the app installed
+  const userAgent = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+  
+  if (contentId && isIOS) {
+    // Show "Open in App" button
+    openAppBtn.style.display = 'block';
+    
+    // TestFlight deep link
+    const testFlightUrl = 'itms-beta://beta.itunes.apple.com/v1/app/6748683473';
+    openAppBtn.href = testFlightUrl;
+    
+    // Handle app opening
+    openAppBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      // Try to open the app
+      window.location.href = testFlightUrl;
+      
+      // Fallback to App Store if needed
+      setTimeout(() => {
+        if (!document.hidden && !document.webkitHidden) {
+          window.location.href = 'https://apps.apple.com/app/6748683473';
+        }
+      }, 1000);
+    });
+  }
+}
               
               // App didn't open, show install prompt
               if (confirm('App ist nicht installiert. Möchten Sie sie jetzt herunterladen?')) {
