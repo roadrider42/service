@@ -162,7 +162,7 @@
             <a href="#" id="open-app-btn" class="btn btn-primary" style="display: none;">
               📱 In App öffnen
             </a>
-            <a href="[https://apps.apple.com/app/weloveservice](https://apps.apple.com/app/weloveservice)" id="download-app-btn" class="btn btn-secondary">
+            <a href="https://apps.apple.com/app/weloveservice" id="download-app-btn" class="btn btn-secondary">
               📲 App herunterladen
             </a>
           </div>
@@ -179,7 +179,7 @@
 
     <script>
       // Supabase Configuration - ÄNDERN SIE DIESE WERTE:
-      const SUPABASE_URL = '[https://feznzobbeiovplncvpjt.supabase.co](https://feznzobbeiovplncvpjt.supabase.co)';
+      const SUPABASE_URL = 'https://feznzobbeiovplncvpjt.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlem56b2JiZWlvdnBsbmN2cGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzOTkzNTYsImV4cCI6MjA2Nzk3NTM1Nn0.xDBhUQRNFszhlkCiKUln6KdYgq2ACoyfvWE47z2G-Ew';
       
       // Initialize Supabase client (lightweight version)
@@ -187,3 +187,192 @@
         constructor(url, key) {
           this.url = url;
           this.key = key;
+        }
+        
+        async query(table, select = '*', filters = {}) {
+          const params = new URLSearchParams();
+          params.append('select', select);
+          
+          Object.entries(filters).forEach(([key, value]) => {
+            params.append(key, `eq.${value}`);
+          });
+          
+          const response = await fetch(`${this.url}/rest/v1/${table}?${params}`, {
+            headers: {
+              'apikey': this.key,
+              'Authorization': `Bearer ${this.key}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          return await response.json();
+        }
+      }
+      
+      // Initialize client
+      const supabase = new SupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      
+      // DOM Elements
+      const loadingState = document.getElementById('loading-state');
+      const errorState = document.getElementById('error-state');
+      const contentDisplay = document.getElementById('content-display');
+      const defaultState = document.getElementById('default-state');
+      const openAppBtn = document.getElementById('open-app-btn');
+      
+      // Check URL parameters when page loads
+      window.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const contentId = urlParams.get('showContent');
+        
+        if (contentId) {
+          console.log('Content ID found:', contentId);
+          loadContent(contentId);
+        } else {
+          hideLoading();
+        }
+        
+        // Setup deep linking
+        setupDeepLinking(contentId);
+      });
+      
+      function hideLoading() {
+        loadingState.style.display = 'none';
+      }
+      
+      function showError(message) {
+        hideLoading();
+        document.getElementById('error-message').textContent = message;
+        errorState.style.display = 'block';
+        defaultState.style.display = 'none';
+      }
+      
+      function showContent(content, media = [], quizzes = []) {
+        hideLoading();
+        defaultState.style.display = 'none';
+        
+        // Fill content data
+        document.getElementById('content-title').textContent = content.title;
+        document.getElementById('content-description').textContent = content.description || 'Keine Beschreibung verfügbar';
+        document.getElementById('content-id').textContent = content.id;
+        
+        // Price badge
+        const priceBadge = document.getElementById('content-price-badge');
+        if (content.is_paid) {
+          priceBadge.textContent = `€${(content.price_cents / 100).toFixed(2)}`;
+          priceBadge.className = 'badge badge-paid';
+        } else {
+          priceBadge.textContent = 'Kostenlos';
+          priceBadge.className = 'badge badge-free';
+        }
+        
+        // Media
+        const mediaContainer = document.getElementById('content-media');
+        mediaContainer.innerHTML = '';
+        if (media.length > 0) {
+          media.forEach(item => {
+            const mediaElement = document.createElement('div');
+            mediaElement.className = 'media-item';
+            
+            if (item.type === 'image') {
+              mediaElement.innerHTML = `<img src="${item.url}" alt="Content media" loading="lazy">`;
+            } else if (item.type === 'video') {
+              mediaElement.innerHTML = `<video src="${item.url}" controls></video>`;
+            }
+            
+            mediaContainer.appendChild(mediaElement);
+          });
+        }
+        
+        // Quizzes
+        const quizzesContainer = document.getElementById('content-quizzes');
+        if (quizzes.length > 0) {
+          quizzesContainer.innerHTML = `<p><strong>📝 ${quizzes.length} Quiz${quizzes.length !== 1 ? 'zes' : ''} verfügbar</strong></p>`;
+        }
+        
+        contentDisplay.style.display = 'block';
+      }
+      
+      async function loadContent(contentId) {
+        try {
+          console.log('Loading content:', contentId);
+          
+          // Load content data
+          const contentData = await supabase.query('contents', '*', { id: contentId });
+          
+          if (!contentData || contentData.length === 0) {
+            throw new Error('Content nicht gefunden');
+          }
+          
+          const content = contentData[0];
+          
+          // Load related media
+          let media = [];
+          try {
+            media = await supabase.query('media', '*', { content_id: contentId });
+          } catch (e) {
+            console.warn('Could not load media:', e);
+          }
+          
+          // Load related quizzes
+          let quizzes = [];
+          try {
+            quizzes = await supabase.query('quizzes', '*', { content_id: contentId });
+          } catch (e) {
+            console.warn('Could not load quizzes:', e);
+          }
+          
+          showContent(content, media, quizzes);
+          
+        } catch (error) {
+          console.error('Error loading content:', error);
+          showError(error.message || 'Content konnte nicht geladen werden');
+        }
+      }
+      
+      function setupDeepLinking(contentId) {
+        // Check if user has the app installed
+        const userAgent = navigator.userAgent;
+        const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+        const isAndroid = /Android/.test(userAgent);
+        
+        if (contentId && (isIOS || isAndroid)) {
+          // Show "Open in App" button
+          openAppBtn.style.display = 'block';
+          
+          // Setup deep link URL
+          const deepLinkUrl = `weloveservice://content/${contentId}`;
+          const fallbackUrl = isIOS 
+            ? 'https://apps.apple.com/app/weloveservice' 
+            : 'https://play.google.com/store/apps/details?id=com.weloveservice';
+          
+          openAppBtn.href = deepLinkUrl;
+          
+          // Handle app opening
+          openAppBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Try to open the app
+            window.location.href = deepLinkUrl;
+            
+            // Fallback: if app doesn't open in 2 seconds, redirect to store
+            setTimeout(() => {
+              if (document.hidden || document.webkitHidden) {
+                // App opened successfully
+                return;
+              }
+              
+              // App didn't open, show install prompt
+              if (confirm('App ist nicht installiert. Möchten Sie sie jetzt herunterladen?')) {
+                window.location.href = fallbackUrl;
+              }
+            }, 2000);
+          });
+        }
+      }
+    </script>
+  </body>
+</html>
