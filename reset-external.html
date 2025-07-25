@@ -252,8 +252,8 @@
             <a href="#" id="open-app-btn" class="btn-primary" style="display: none;">
               📱 SpoonUp App öffnen
             </a>
-            <a href="https://testflight.apple.com/join/YOUR_TESTFLIGHT_ID" id="download-app-btn" class="btn-secondary">
-              📲 SpoonUp TestFlight
+            <a href="#" id="download-app-btn" class="btn-secondary" onclick="alert('SpoonUp App wird bald verfügbar sein!')">
+              📲 SpoonUp App (bald verfügbar)
             </a>
           </div>
         </div>
@@ -477,8 +477,8 @@
               // If app is not installed, redirect to App Store after a short delay
               setTimeout(() => {
                 if (!document.hidden && !document.webkitHidden) {
-                  console.log('Redirecting to TestFlight');
-                  window.location.href = 'https://testflight.apple.com/join/YOUR_TESTFLIGHT_ID';
+                  console.log('App not yet available');
+                  alert('SpoonUp App wird bald verfügbar sein!');
                 }
               }, 500);
             });
