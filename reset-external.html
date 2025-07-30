@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -106,12 +105,12 @@
       
       .btn {
         width: 100%;
-        padding: 15px;
+        padding: 12px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
         border-radius: 8px;
-        font-size: 1.1rem;
+        font-size: 1rem;
         font-weight: 600;
         cursor: pointer;
         transition: transform 0.2s;
@@ -178,19 +177,41 @@
         color: #333;
         border: 2px solid #ddd;
       }
+      
+      .password-requirements {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 10px;
+        font-size: 0.9rem;
+        color: #666;
+      }
+      
+      .password-requirements h5 {
+        color: #333;
+        margin-bottom: 8px;
+      }
+      
+      .password-requirements ul {
+        margin-left: 15px;
+      }
+      
+      .password-requirements li {
+        margin-bottom: 3px;
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header">
-        <h1>🥄 SpoonUp</h1>
+        <h1>🔐 SpoonUp</h1>
         <p>Passwort zurücksetzen</p>
       </div>
       
       <div class="content">
         <!-- Loading State -->
         <div id="loading-state" class="loading">
-          <p>🔄 Reset-Link wird verarbeitet...</p>
+          <p>🔄 Passwort-Reset wird verarbeitet...</p>
         </div>
         
         <!-- Error State -->
@@ -205,44 +226,47 @@
         
         <!-- Password Reset Form -->
         <div id="reset-form" style="display: none;">
-          <h2 style="margin-bottom: 20px; color: #333;">🔐 Neues Passwort erstellen</h2>
-          <p style="color: #666; margin-bottom: 30px;">Erstellen Sie ein neues, sicheres Passwort für Ihr SpoonUp-Konto.</p>
-          
           <form id="password-form">
             <div class="form-group">
-              <label for="password">Neues Passwort</label>
-              <input
-                type="password"
-                id="password"
-                placeholder="Mindestens 6 Zeichen"
-                required
-                minlength="6"
-              />
+              <label for="new-password">Neues Passwort</label>
+              <input type="password" id="new-password" placeholder="Geben Sie Ihr neues Passwort ein" required>
             </div>
-
+            
             <div class="form-group">
-              <label for="confirmPassword">Passwort bestätigen</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                placeholder="Passwort wiederholen"
-                required
-                minlength="6"
-              />
+              <label for="confirm-password">Passwort bestätigen</label>
+              <input type="password" id="confirm-password" placeholder="Bestätigen Sie Ihr neues Passwort" required>
             </div>
-
+            
+            <div class="password-requirements">
+              <h5>🛡️ Passwort-Anforderungen:</h5>
+              <ul>
+                <li>Mindestens 8 Zeichen</li>
+                <li>Mindestens ein Großbuchstabe</li>
+                <li>Mindestens ein Kleinbuchstabe</li>
+                <li>Mindestens eine Zahl</li>
+              </ul>
+            </div>
+            
             <button type="submit" class="btn" id="submit-btn">
-              🔐 Passwort zurücksetzen
+              🔐 Passwort aktualisieren
             </button>
           </form>
+        </div>
+        
+        <!-- Success Message after password reset -->
+        <div id="success-section" style="display: none;">
+          <div class="success">
+            <h3>🎉 Passwort erfolgreich aktualisiert!</h3>
+            <p>Ihr neues Passwort wurde gespeichert.</p>
+            <p>Sie können sich jetzt mit Ihrem neuen Passwort anmelden.</p>
+          </div>
           
           <div class="info-box">
-            <h4>🔒 Sicherheitshinweise:</h4>
+            <h4>🚀 Nächste Schritte:</h4>
             <ul>
-              <li>Verwenden Sie ein starkes, einzigartiges Passwort</li>
-              <li>Mischen Sie Buchstaben, Zahlen und Sonderzeichen</li>
-              <li>Verwenden Sie mindestens 8 Zeichen</li>
-              <li>Teilen Sie Ihr Passwort niemals mit anderen</li>
+              <li>Öffnen Sie die SpoonUp App</li>
+              <li>Melden Sie sich mit Ihrem neuen Passwort an</li>
+              <li>Ihr Konto ist wieder vollständig zugänglich</li>
             </ul>
           </div>
         </div>
@@ -261,9 +285,21 @@
         
         <!-- Default State -->
         <div id="default-state">
-          <h2>👋 Willkommen!</h2>
-          <p>Diese Seite verarbeitet Passwort-Reset-Links von SpoonUp.</p>
-          <p>Verwenden Sie den Link aus Ihrer E-Mail, um Ihr Passwort zurückzusetzen.</p>
+          <div class="info-box">
+            <h4>🔐 Passwort zurücksetzen</h4>
+            <p>Diese Seite ermöglicht es Ihnen, ein neues Passwort für Ihr SpoonUp-Konto zu erstellen.</p>
+            <p>Verwenden Sie den Link aus Ihrer Passwort-Reset E-Mail.</p>
+          </div>
+          
+          <div class="info-box">
+            <h4>📧 E-Mail nicht erhalten?</h4>
+            <ul>
+              <li>Überprüfen Sie Ihren Spam-Ordner</li>
+              <li>Stellen Sie sicher, dass Ihre E-Mail-Adresse korrekt ist</li>
+              <li>Warten Sie einige Minuten und versuchen Sie es erneut</li>
+              <li>Kontaktieren Sie uns bei weiteren Problemen</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -273,35 +309,17 @@
       const SUPABASE_URL = 'https://ddbrdvwguyhnfvicheqn.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkYnJkdndndXlobmZ2aWNoZXFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyOTc0NzcsImV4cCI6MjA2ODg3MzQ3N30.Cif5HWsuFX6hqxxwJRa5mOvny56g5bbxznjlqLX1V74';
       
-      // Initialize Supabase client
+      // Simple Supabase client for password reset
       class SupabaseClient {
         constructor(url, key) {
           this.url = url;
           this.key = key;
-        }
-        
-        async updatePassword(accessToken, refreshToken, newPassword) {
-          const response = await fetch(`${this.url}/auth/v1/user`, {
-            method: 'PUT',
-            headers: {
-              'apikey': this.key,
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              password: newPassword
-            })
-          });
-          
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || `HTTP error! status: ${response.status}`);
-          }
-          
-          return await response.json();
+          this.session = null;
         }
         
         async verifyOtp(token, type = 'recovery') {
+          console.log('Verifying OTP with Supabase...', { token: token ? 'present' : 'missing', type });
+          
           const response = await fetch(`${this.url}/auth/v1/verify`, {
             method: 'POST',
             headers: {
@@ -314,12 +332,58 @@
             })
           });
           
+          console.log('Supabase response status:', response.status);
+          
           if (!response.ok) {
             const error = await response.json();
+            console.error('Supabase error response:', error);
             throw new Error(error.message || `HTTP error! status: ${response.status}`);
           }
           
-          return await response.json();
+          const result = await response.json();
+          console.log('Supabase success response:', result);
+          
+          // Store session for password update
+          if (result.access_token) {
+            this.session = {
+              access_token: result.access_token,
+              refresh_token: result.refresh_token
+            };
+          }
+          
+          return result;
+        }
+        
+        async updatePassword(newPassword) {
+          if (!this.session || !this.session.access_token) {
+            throw new Error('Keine aktive Session für Passwort-Update');
+          }
+          
+          console.log('Updating password with Supabase...');
+          
+          const response = await fetch(`${this.url}/auth/v1/user`, {
+            method: 'PUT',
+            headers: {
+              'apikey': this.key,
+              'Authorization': `Bearer ${this.session.access_token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              password: newPassword
+            })
+          });
+          
+          console.log('Password update response status:', response.status);
+          
+          if (!response.ok) {
+            const error = await response.json();
+            console.error('Password update error:', error);
+            throw new Error(error.message || `HTTP error! status: ${response.status}`);
+          }
+          
+          const result = await response.json();
+          console.log('Password update success:', result);
+          return result;
         }
       }
       
@@ -332,35 +396,34 @@
       const successState = document.getElementById('success-state');
       const resetForm = document.getElementById('reset-form');
       const defaultState = document.getElementById('default-state');
+      const successSection = document.getElementById('success-section');
       const appSection = document.getElementById('app-section');
       const passwordForm = document.getElementById('password-form');
       const submitBtn = document.getElementById('submit-btn');
       
-      // Global variables
-      let accessToken = null;
-      let refreshToken = null;
-      
       // Check URL parameters when page loads
       window.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM loaded');
+        console.log('DOM loaded, checking for reset token...');
+        
         const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('access_token') || urlParams.get('token');
-        const refresh = urlParams.get('refresh_token');
+        const token = urlParams.get('token') || urlParams.get('access_token');
         const type = urlParams.get('type');
         
-        console.log('URL params:', { token: token ? 'present' : 'missing', refresh: refresh ? 'present' : 'missing', type });
+        console.log('URL params:', { 
+          token: token ? 'present' : 'missing', 
+          type: type || 'not specified',
+          fullUrl: window.location.href 
+        });
         
-        if (token && type === 'recovery') {
-          console.log('Recovery token found, processing...');
-          processResetToken(token, refresh);
-        } else if (token) {
-          console.log('Token found, processing...');
-          processResetToken(token, refresh);
+        if (token && (type === 'recovery' || !type)) {
+          console.log('Reset token found, processing...');
+          processResetToken(token);
         } else {
           console.log('No reset token found');
           hideLoading();
         }
         
+        setupPasswordForm();
         setupDeepLinking();
       });
       
@@ -375,7 +438,6 @@
         document.getElementById('error-message').textContent = message;
         errorState.style.display = 'block';
         defaultState.style.display = 'none';
-        resetForm.style.display = 'none';
       }
       
       function showSuccess(message) {
@@ -383,50 +445,23 @@
         hideLoading();
         document.getElementById('success-message').textContent = message;
         successState.style.display = 'block';
-        resetForm.style.display = 'none';
-        appSection.style.display = 'block';
-      }
-      
-      function showResetForm() {
-        console.log('Showing reset form');
-        hideLoading();
-        defaultState.style.display = 'none';
         resetForm.style.display = 'block';
+        defaultState.style.display = 'none';
       }
       
-      async function processResetToken(token, refresh) {
+      async function processResetToken(token) {
         try {
           console.log('Processing reset token...');
           
-          // Token from email is already valid - use directly
-          if (token) {
-            console.log('Using access token from email directly');
-            accessToken = token;
-            refreshToken = refresh;
-            
-            // Test if token is valid by making a simple request
-            try {
-              const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-                method: 'GET',
-                headers: {
-                  'apikey': SUPABASE_ANON_KEY,
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json'
-                }
-              });
-              
-              if (response.ok) {
-                console.log('Token is valid, showing reset form');
-                showResetForm();
-              } else {
-                throw new Error('Token ist ungültig oder abgelaufen');
-              }
-            } catch (testError) {
-              console.error('Token validation failed:', testError);
-              throw new Error('Reset-Link ist ungültig oder abgelaufen');
-            }
+          // Verify the token with Supabase
+          const result = await supabase.verifyOtp(token, 'recovery');
+          console.log('Token verification result:', result);
+          
+          if (result.access_token || result.user) {
+            console.log('Reset token verification successful!');
+            showSuccess('Reset-Link erfolgreich verifiziert!');
           } else {
-            throw new Error('Kein Reset-Token gefunden');
+            throw new Error('Ungültiger oder abgelaufener Reset-Link');
           }
           
         } catch (error) {
@@ -435,45 +470,50 @@
         }
       }
       
-      // Handle password form submission
-      passwordForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        
-        if (password.length < 6) {
-          showError('Passwort muss mindestens 6 Zeichen lang sein.');
-          return;
-        }
-        
-        if (password !== confirmPassword) {
-          showError('Passwörter stimmen nicht überein.');
-          return;
-        }
-        
-        if (!accessToken) {
-          showError('Kein gültiger Reset-Token gefunden.');
-          return;
-        }
-        
-        submitBtn.disabled = true;
-        submitBtn.textContent = '🔄 Wird gespeichert...';
-        
-        try {
-          console.log('Updating password...');
-          await supabase.updatePassword(accessToken, refreshToken, password);
+      function setupPasswordForm() {
+        passwordForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
           
-          console.log('Password updated successfully');
-          showSuccess('Passwort erfolgreich zurückgesetzt! Sie können sich jetzt mit Ihrem neuen Passwort anmelden.');
+          const newPassword = document.getElementById('new-password').value;
+          const confirmPassword = document.getElementById('confirm-password').value;
           
-        } catch (error) {
-          console.error('Error updating password:', error);
-          showError(error.message || 'Fehler beim Zurücksetzen des Passworts');
-          submitBtn.disabled = false;
-          submitBtn.textContent = '🔐 Passwort zurücksetzen';
-        }
-      });
+          // Validate passwords
+          if (newPassword !== confirmPassword) {
+            showError('Passwörter stimmen nicht überein');
+            return;
+          }
+          
+          if (newPassword.length < 8) {
+            showError('Passwort muss mindestens 8 Zeichen lang sein');
+            return;
+          }
+          
+          if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword)) {
+            showError('Passwort muss Groß-, Kleinbuchstaben und Zahlen enthalten');
+            return;
+          }
+          
+          // Update password
+          submitBtn.disabled = true;
+          submitBtn.textContent = '🔄 Wird aktualisiert...';
+          
+          try {
+            await supabase.updatePassword(newPassword);
+            
+            // Show success
+            resetForm.style.display = 'none';
+            successState.style.display = 'none';
+            successSection.style.display = 'block';
+            appSection.style.display = 'block';
+            
+          } catch (error) {
+            console.error('Password update error:', error);
+            showError(error.message || 'Passwort konnte nicht aktualisiert werden');
+            submitBtn.disabled = false;
+            submitBtn.textContent = '🔐 Passwort aktualisieren';
+          }
+        });
+      }
       
       function setupDeepLinking() {
         console.log('Setting up deep linking');
@@ -492,12 +532,12 @@
               console.log('Opening SpoonUp app...');
               
               // Try to open the app using custom URL scheme
-              window.location.href = 'spoonup://reset-complete';
+              window.location.href = 'spoonup://password-reset-complete';
               
-              // If app is not installed, redirect to App Store after a short delay
+              // If app is not installed, show message after a short delay
               setTimeout(() => {
                 if (!document.hidden && !document.webkitHidden) {
-                  console.log('App not yet available');
+                  console.log('App not installed or failed to open');
                   alert('SpoonUp App wird bald verfügbar sein!');
                 }
               }, 500);
