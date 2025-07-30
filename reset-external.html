@@ -453,11 +453,21 @@
         try {
           console.log('Processing reset token...');
           
-          // Verify the token with Supabase
-          const result = await supabase.verifyOtp(token, 'recovery');
-          console.log('Token verification result:', result);
+          // Get URL parameters for proper token handling
+          const urlParams = new URLSearchParams(window.location.search);
+          const access_token = urlParams.get('access_token');
+          const refresh_token = urlParams.get('refresh_token');
+          const type = urlParams.get('type');
           
-          if (result.access_token || result.user) {
+          if (access_token && type === 'recovery') {
+            console.log('Recovery tokens found, setting up session...');
+            
+            // Set up session with the tokens
+            supabase.session = {
+              access_token: access_token,
+              refresh_token: refresh_token
+            };
+            
             console.log('Reset token verification successful!');
             showSuccess('Reset-Link erfolgreich verifiziert!');
           } else {
