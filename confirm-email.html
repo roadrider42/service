@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SpoonUp - E-Mail bestätigen</title>
+    <link rel="canonical" href="https://roadrider42.github.io/service/confirm-email.html">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      
+      .container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        max-width: 500px;
+        width: 100%;
+        overflow: hidden;
+      }
+      
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-align: center;
+        padding: 40px 20px;
+      }
+      
+      .header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+      }
+      
+      .header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
+      
+      .content {
+        padding: 40px;
+      }
+      
+      .loading {
+        text-align: center;
+        color: #666;
+        font-size: 1.1rem;
+      }
+      
+      .error {
+        background: #fee;
+        border: 1px solid #fcc;
+        border-radius: 8px;
+        padding: 20px;
+        color: #c33;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      
+      .success {
+        background: #efe;
+        border: 1px solid #cfc;
+        border-radius: 8px;
+        padding: 20px;
+        color: #363;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      
+      .info-box {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+        color: #666;
+        font-size: 0.9rem;
+      }
+      
+      .info-box h4 {
+        color: #333;
+        margin-bottom: 10px;
+      }
+      
+      .info-box ul {
+        margin-left: 20px;
+      }
+      
+      .info-box li {
+        margin-bottom: 5px;
+      }
+      
+      .app-buttons {
+        text-align: center;
+        margin-top: 30px;
+      }
+      
+      .app-buttons a {
+        display: inline-block;
+        padding: 12px 24px;
+        margin: 5px;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: transform 0.2s;
+      }
+      
+      .app-buttons a:hover {
+        transform: translateY(-2px);
+      }
+      
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+      
+      .btn-secondary {
+        background: #f8f9fa;
+        color: #333;
+        border: 2px solid #ddd;
+      }
+      
+      .welcome-message {
+        text-align: center;
+        padding: 20px;
+      }
+      
+      .welcome-message h2 {
+        color: #333;
+        margin-bottom: 15px;
+      }
+      
+      .welcome-message p {
+        color: #666;
+        margin-bottom: 10px;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🥄 SpoonUp</h1>
+        <p>E-Mail bestätigen</p>
+      </div>
+      
+      <div class="content">
+        <!-- Loading State -->
+        <div id="loading-state" class="loading">
+          <p>🔄 E-Mail-Bestätigung wird verarbeitet...</p>
+        </div>
+        
+        <!-- Error State -->
+        <div id="error-state" class="error" style="display: none;">
+          <p><strong>❌ Fehler:</strong> <span id="error-message"></span></p>
+        </div>
+        
+        <!-- Success State -->
+        <div id="success-state" class="success" style="display: none;">
+          <p><strong>✅ Erfolgreich:</strong> <span id="success-message"></span></p>
+        </div>
+        
+        <!-- Welcome Message after confirmation -->
+        <div id="welcome-section" style="display: none;">
+          <div class="welcome-message">
+            <h2>🎉 Willkommen bei SpoonUp!</h2>
+            <p>Ihre E-Mail-Adresse wurde erfolgreich bestätigt.</p>
+            <p>Sie können sich jetzt in der SpoonUp App anmelden und loslegen!</p>
+          </div>
+          
+          <div class="info-box">
+            <h4>🚀 Nächste Schritte:</h4>
+            <ul>
+              <li>Öffnen Sie die SpoonUp App</li>
+              <li>Melden Sie sich mit Ihrer E-Mail-Adresse an</li>
+              <li>Entdecken Sie Lerninhalte und Rezepte</li>
+              <li>Vernetzen Sie sich mit anderen Tischmeistern</li>
+            </ul>
+          </div>
+        </div>
+        
+        <!-- App Download/Open Section -->
+        <div id="app-section" style="display: none;">
+          <div class="app-buttons">
+            <a href="#" id="open-app-btn" class="btn-primary" style="display: none;">
+              📱 SpoonUp App öffnen
+            </a>
+            <a href="#" id="download-app-btn" class="btn-secondary" onclick="alert('SpoonUp App wird bald verfügbar sein!')">
+              📲 SpoonUp App (bald verfügbar)
+            </a>
+          </div>
+        </div>
+        
+        <!-- Default State -->
+        <div id="default-state">
+          <div class="welcome-message">
+            <h2>📧 E-Mail bestätigen</h2>
+            <p>Diese Seite bestätigt Ihre E-Mail-Adresse für SpoonUp.</p>
+            <p>Verwenden Sie den Link aus Ihrer Bestätigungs-E-Mail.</p>
+          </div>
+          
+          <div class="info-box">
+            <h4>📬 E-Mail nicht erhalten?</h4>
+            <ul>
+              <li>Überprüfen Sie Ihren Spam-Ordner</li>
+              <li>Stellen Sie sicher, dass Ihre E-Mail-Adresse korrekt ist</li>
+              <li>Warten Sie einige Minuten und versuchen Sie es erneut</li>
+              <li>Kontaktieren Sie uns bei weiteren Problemen</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Supabase Configuration for SpoonUp
+      const SUPABASE_URL = 'https://ddbrdvwguyhnfvicheqn.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkYnJkdndndXlobmZ2aWNoZXFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyOTc0NzcsImV4cCI6MjA2ODg3MzQ3N30.Cif5HWsuFX6hqxxwJRa5mOvny56g5bbxznjlqLX1V74';
+      
+      // Simple Supabase client for email confirmation
+      class SupabaseClient {
+        constructor(url, key) {
+          this.url = url;
+          this.key = key;
+        }
+        
+        async verifyOtp(token, type = 'signup') {
+          console.log('Verifying OTP with Supabase...', { token: token ? 'present' : 'missing', type });
+          
+          const response = await fetch(`${this.url}/auth/v1/verify`, {
+            method: 'POST',
+            headers: {
+              'apikey': this.key,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              token: token,
+              type: type
+            })
+          });
+          
+          console.log('Supabase response status:', response.status);
+          
+          if (!response.ok) {
+            const error = await response.json();
+            console.error('Supabase error response:', error);
+            throw new Error(error.message || `HTTP error! status: ${response.status}`);
+          }
+          
+          const result = await response.json();
+          console.log('Supabase success response:', result);
+          return result;
+        }
+      }
+      
+      // Initialize client
+      const supabase = new SupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      
+      // DOM Elements
+      const loadingState = document.getElementById('loading-state');
+      const errorState = document.getElementById('error-state');
+      const successState = document.getElementById('success-state');
+      const defaultState = document.getElementById('default-state');
+      const welcomeSection = document.getElementById('welcome-section');
+      const appSection = document.getElementById('app-section');
+      
+      // Check URL parameters when page loads
+      window.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, checking for confirmation token...');
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token') || urlParams.get('access_token');
+        const type = urlParams.get('type');
+        
+        console.log('URL params:', { 
+          token: token ? 'present' : 'missing', 
+          type: type || 'not specified',
+          fullUrl: window.location.href 
+        });
+        
+        if (token && (type === 'signup' || !type)) {
+          console.log('Confirmation token found, processing...');
+          processConfirmationToken(token);
+        } else {
+          console.log('No confirmation token found');
+          hideLoading();
+        }
+        
+        setupDeepLinking();
+      });
+      
+      function hideLoading() {
+        console.log('Hiding loading state');
+        loadingState.style.display = 'none';
+      }
+      
+      function showError(message) {
+        console.error('Error:', message);
+        hideLoading();
+        document.getElementById('error-message').textContent = message;
+        errorState.style.display = 'block';
+        defaultState.style.display = 'none';
+      }
+      
+      function showSuccess(message) {
+        console.log('Success:', message);
+        hideLoading();
+        document.getElementById('success-message').textContent = message;
+        successState.style.display = 'block';
+        welcomeSection.style.display = 'block';
+        appSection.style.display = 'block';
+        defaultState.style.display = 'none';
+      }
+      
+      async function processConfirmationToken(token) {
+        try {
+          console.log('Processing confirmation token...');
+          
+          // Verify the token with Supabase
+          const result = await supabase.verifyOtp(token, 'signup');
+          console.log('Token verification result:', result);
+          
+          if (result.access_token || result.user) {
+            console.log('Email confirmation successful!');
+            showSuccess('E-Mail-Adresse erfolgreich bestätigt!');
+          } else {
+            throw new Error('Ungültiger oder abgelaufener Bestätigungslink');
+          }
+          
+        } catch (error) {
+          console.error('Error processing confirmation token:', error);
+          showError(error.message || 'Bestätigungslink konnte nicht verarbeitet werden');
+        }
+      }
+      
+      function setupDeepLinking() {
+        console.log('Setting up deep linking');
+        const userAgent = navigator.userAgent;
+        const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+        
+        if (isIOS) {
+          console.log('iOS device detected, showing app open button');
+          const openAppBtn = document.getElementById('open-app-btn');
+          
+          if (openAppBtn) {
+            openAppBtn.style.display = 'inline-block';
+            
+            openAppBtn.addEventListener('click', function(e) {
+              e.preventDefault();
+              console.log('Opening SpoonUp app...');
+              
+              // Try to open the app using custom URL scheme
+              window.location.href = 'spoonup://email-confirmed';
+              
+              // If app is not installed, show message after a short delay
+              setTimeout(() => {
+                if (!document.hidden && !document.webkitHidden) {
+                  console.log('App not installed or failed to open');
+                  alert('SpoonUp App wird bald verfügbar sein!');
+                }
+              }, 500);
+            });
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
