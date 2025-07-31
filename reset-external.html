@@ -184,6 +184,17 @@
 
         <div id="error" class="error" style="display: none;"></div>
         <div id="success" class="success" style="display: none;"></div>
+        
+        <div id="expiredLink" style="display: none;">
+            <div class="error">
+                <h3>🔗 Link abgelaufen</h3>
+                <p>Dieser Reset-Link ist ungültig oder abgelaufen. Reset-Links sind nur 1 Stunde gültig.</p>
+            </div>
+            <div class="info">
+                <strong>💡 Lösung:</strong> Öffnen Sie die SpoonUp App und fordern Sie einen neuen Passwort-Reset an.
+            </div>
+            <a href="spoonup://" class="app-link">📱 SpoonUp App öffnen</a>
+        </div>
 
         <form id="resetForm" style="display: none;">
             <div class="form-group">
@@ -239,6 +250,7 @@
             const loadingDiv = document.getElementById('loading');
             const errorDiv = document.getElementById('error');
             const resetForm = document.getElementById('resetForm');
+            const expiredLinkDiv = document.getElementById('expiredLink');
 
             // Show loading
             loadingDiv.style.display = 'block';
@@ -246,7 +258,8 @@
             try {
                 // Check if we have the required tokens
                 if (!accessToken || type !== 'recovery') {
-                    throw new Error('Ungültiger oder abgelaufener Reset-Link. Bitte fordern Sie einen neuen an.');
+                    console.log('❌ Missing or invalid tokens:', { accessToken: !!accessToken, type });
+                    throw new Error('EXPIRED_LINK');
                 }
 
                 // Set the session with the tokens
@@ -256,10 +269,29 @@
                 });
 
                 if (error) {
+                    console.error('❌ Session error:', error);
+                    
+                    // Check if it's an expired token error
+                    if (error.message?.includes('expired') || 
+                        error.message?.includes('invalid') ||
+                        error.message?.includes('JWT')) {
+                        throw new Error('EXPIRED_LINK');
+                    }
+                    
                     throw new Error(`Fehler beim Laden der Session: ${error.message}`);
                 }
 
                 console.log('✅ Session set successfully:', data);
+
+                // Verify the session is actually valid
+                const { data: user, error: userError } = await supabase.auth.getUser();
+                
+                if (userError || !user.user) {
+                    console.error('❌ User verification failed:', userError);
+                    throw new Error('EXPIRED_LINK');
+                }
+
+                console.log('✅ User verified:', user.user.email);
 
                 // Hide loading and show form
                 loadingDiv.style.display = 'none';
@@ -268,8 +300,15 @@
             } catch (error) {
                 console.error('❌ Error initializing password reset:', error);
                 loadingDiv.style.display = 'none';
-                errorDiv.textContent = error.message;
-                errorDiv.style.display = 'block';
+                
+                if (error.message === 'EXPIRED_LINK') {
+                    // Show expired link message
+                    expiredLinkDiv.style.display = 'block';
+                } else {
+                    // Show generic error
+                    errorDiv.textContent = error.message;
+                    errorDiv.style.display = 'block';
+                }
             }
         }
 
