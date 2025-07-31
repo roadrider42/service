@@ -243,8 +243,26 @@
         const accessToken = urlParams.get('access_token');
         const refreshToken = urlParams.get('refresh_token');
         const type = urlParams.get('type');
+        
+        // Also check hash parameters (Supabase sometimes uses hash instead of query)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const hashAccessToken = hashParams.get('access_token');
+        const hashRefreshToken = hashParams.get('refresh_token');
+        const hashType = hashParams.get('type');
 
-        console.log('🔧 Reset page loaded with params:', { accessToken: !!accessToken, refreshToken: !!refreshToken, type });
+        console.log('🔧 FULL DEBUG INFO:');
+        console.log('Full URL:', window.location.href);
+        console.log('Search params:', window.location.search);
+        console.log('Hash params:', window.location.hash);
+        console.log('Query params:', { accessToken: !!accessToken, refreshToken: !!refreshToken, type });
+        console.log('Hash params:', { hashAccessToken: !!hashAccessToken, hashRefreshToken: !!hashRefreshToken, hashType });
+        console.log('All query params:', Object.fromEntries(urlParams));
+        console.log('All hash params:', Object.fromEntries(hashParams));
+        
+        // Use hash params if query params are empty (Supabase often uses hash)
+        const finalAccessToken = accessToken || hashAccessToken;
+        const finalRefreshToken = refreshToken || hashRefreshToken;
+        const finalType = type || hashType;
 
         async function initializePasswordReset() {
             const loadingDiv = document.getElementById('loading');
@@ -257,15 +275,26 @@
 
             try {
                 // Check if we have the required tokens
-                if (!accessToken || type !== 'recovery') {
-                    console.log('❌ Missing or invalid tokens:', { accessToken: !!accessToken, type });
+                if (!finalAccessToken || finalType !== 'recovery') {
+                    console.log('❌ Missing or invalid tokens:', { 
+                        finalAccessToken: !!finalAccessToken, 
+                        finalType,
+                        originalAccessToken: !!accessToken,
+                        originalType: type
+                    });
                     throw new Error('EXPIRED_LINK');
                 }
 
+                console.log('✅ Using tokens:', { 
+                    accessToken: !!finalAccessToken, 
+                    refreshToken: !!finalRefreshToken, 
+                    type: finalType 
+                });
+
                 // Set the session with the tokens
                 const { data, error } = await supabase.auth.setSession({
-                    access_token: accessToken,
-                    refresh_token: refreshToken
+                    access_token: finalAccessToken,
+                    refresh_token: finalRefreshToken
                 });
 
                 if (error) {
