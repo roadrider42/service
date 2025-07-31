@@ -181,6 +181,11 @@
             <div class="loading"></div>
             <p>Verarbeite Anfrage...</p>
         </div>
+        
+        <div id="debugInfo" class="info" style="display: block; text-align: left; font-family: monospace; font-size: 0.8rem;">
+            <h4>🔧 Debug Information:</h4>
+            <div id="debugContent">Loading...</div>
+        </div>
 
         <div id="error" class="error" style="display: none;"></div>
         <div id="success" class="success" style="display: none;"></div>
@@ -240,29 +245,42 @@
 
         // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
-        const accessToken = urlParams.get('access_token');
-        const refreshToken = urlParams.get('refresh_token');
-        const type = urlParams.get('type');
+        const code = urlParams.get('code');
+        const error = urlParams.get('error');
+        const errorDescription = urlParams.get('error_description');
         
-        // Also check hash parameters (Supabase sometimes uses hash instead of query)
+        // Also check hash parameters (some flows might use hash)
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const hashAccessToken = hashParams.get('access_token');
-        const hashRefreshToken = hashParams.get('refresh_token');
-        const hashType = hashParams.get('type');
+        const hashCode = hashParams.get('code');
+        const hashError = hashParams.get('error');
 
-        console.log('🔧 FULL DEBUG INFO:');
+        console.log('🔧 SUPABASE CODE FLOW DEBUG:');
         console.log('Full URL:', window.location.href);
         console.log('Search params:', window.location.search);
         console.log('Hash params:', window.location.hash);
-        console.log('Query params:', { accessToken: !!accessToken, refreshToken: !!refreshToken, type });
-        console.log('Hash params:', { hashAccessToken: !!hashAccessToken, hashRefreshToken: !!hashRefreshToken, hashType });
-        console.log('All query params:', Object.fromEntries(urlParams));
-        console.log('All hash params:', Object.fromEntries(hashParams));
+        console.log('Code from query:', code);
+        console.log('Code from hash:', hashCode);
+        console.log('Error:', error);
+        console.log('Error description:', errorDescription);
         
-        // Use hash params if query params are empty (Supabase often uses hash)
-        const finalAccessToken = accessToken || hashAccessToken;
-        const finalRefreshToken = refreshToken || hashRefreshToken;
-        const finalType = type || hashType;
+        // Use the code from either location
+        const finalCode = code || hashCode;
+        const finalError = error || hashError;
+        
+        // Display debug info on page
+        const debugContent = document.getElementById('debugContent');
+        if (debugContent) {
+            debugContent.innerHTML = `
+                <strong>Full URL:</strong><br>${window.location.href}<br><br>
+                <strong>Search params:</strong> ${window.location.search || '(empty)'}<br>
+                <strong>Hash params:</strong> ${window.location.hash || '(empty)'}<br><br>
+                <strong>Authorization Code Flow:</strong><br>
+                - code: ${finalCode ? 'YES (✓)' : 'NO (❌)'}<br>
+                - error: ${finalError || '(none)'}<br>
+                - error_description: ${errorDescription || '(none)'}<br><br>
+                <strong>Status:</strong> ${finalCode ? 'Ready to exchange code for tokens' : 'Missing authorization code'}<br>
+            `;
+        }
 
         async function initializePasswordReset() {
             const loadingDiv = document.getElementById('loading');
@@ -274,45 +292,39 @@
             loadingDiv.style.display = 'block';
 
             try {
-                // Check if we have the required tokens
-                if (!finalAccessToken || finalType !== 'recovery') {
-                    console.log('❌ Missing or invalid tokens:', { 
-                        finalAccessToken: !!finalAccessToken, 
-                        finalType,
-                        originalAccessToken: !!accessToken,
-                        originalType: type
-                    });
+                // Check if we have an error from Supabase
+                if (finalError) {
+                    console.error('❌ Supabase returned error:', finalError, errorDescription);
+                    throw new Error(`Supabase Fehler: ${finalError} - ${errorDescription || 'Unbekannter Fehler'}`);
+                }
+
+                // Check if we have the authorization code
+                if (!finalCode) {
+                    console.log('❌ Missing authorization code');
                     throw new Error('EXPIRED_LINK');
                 }
 
-                console.log('✅ Using tokens:', { 
-                    accessToken: !!finalAccessToken, 
-                    refreshToken: !!finalRefreshToken, 
-                    type: finalType 
-                });
+                console.log('✅ Found authorization code, exchanging for session...');
 
-                // Set the session with the tokens
-                const { data, error } = await supabase.auth.setSession({
-                    access_token: finalAccessToken,
-                    refresh_token: finalRefreshToken
-                });
+                // Exchange the code for a session (this is the key part!)
+                const { data, error } = await supabase.auth.exchangeCodeForSession(finalCode);
 
                 if (error) {
-                    console.error('❌ Session error:', error);
+                    console.error('❌ Code exchange error:', error);
                     
-                    // Check if it's an expired token error
+                    // Check if it's an expired code error
                     if (error.message?.includes('expired') || 
                         error.message?.includes('invalid') ||
-                        error.message?.includes('JWT')) {
+                        error.message?.includes('code')) {
                         throw new Error('EXPIRED_LINK');
                     }
                     
-                    throw new Error(`Fehler beim Laden der Session: ${error.message}`);
+                    throw new Error(`Fehler beim Code-Austausch: ${error.message}`);
                 }
 
-                console.log('✅ Session set successfully:', data);
+                console.log('✅ Code exchange successful:', data);
 
-                // Verify the session is actually valid
+                // Verify the session is actually valid and user exists
                 const { data: user, error: userError } = await supabase.auth.getUser();
                 
                 if (userError || !user.user) {
@@ -320,7 +332,12 @@
                     throw new Error('EXPIRED_LINK');
                 }
 
-                console.log('✅ User verified:', user.user.email);
+                console.log('✅ User verified for password reset:', user.user.email);
+
+                // Update debug info to show success
+                if (debugContent) {
+                    debugContent.innerHTML += `<br><strong>✅ SUCCESS:</strong> Code exchanged, user authenticated: ${user.user.email}`;
+                }
 
                 // Hide loading and show form
                 loadingDiv.style.display = 'none';
