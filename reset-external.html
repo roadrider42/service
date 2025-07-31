@@ -311,54 +311,44 @@
                     throw new Error('EXPIRED_LINK');
                 }
 
-                console.log('✅ Found authorization code, redirecting to app...');
+                console.log('✅ Found authorization code, trying direct password reset...');
+
+                // Try to exchange code for session directly on GitHub Pages
+                const { data, error } = await supabase.auth.exchangeCodeForSession(finalCode);
+
+                if (error) {
+                    console.error('❌ Code exchange failed:', error);
+                    
+                    // If PKCE fails, show manual reset form with instructions
+                    if (error.message?.includes('code verifier') || error.message?.includes('PKCE')) {
+                        console.log('ℹ️ PKCE not supported on static pages, showing manual reset instructions');
+                        showManualResetInstructions();
+                        return;
+                    }
+                    
+                    throw new Error(`Code-Austausch fehlgeschlagen: ${error.message}`);
+                }
+
+                console.log('✅ Code exchange successful:', data);
+
+                // Verify the session
+                const { data: user, error: userError } = await supabase.auth.getUser();
+                
+                if (userError || !user.user) {
+                    console.error('❌ User verification failed:', userError);
+                    throw new Error('EXPIRED_LINK');
+                }
+
+                console.log('✅ User verified for password reset:', user.user.email);
 
                 // Update debug info
                 if (debugContent) {
-                    debugContent.innerHTML += `<br><strong>✅ SOLUTION:</strong> Redirecting to SpoonUp app with code for secure processing...`;
+                    debugContent.innerHTML += `<br><strong>✅ SUCCESS:</strong> Session established for ${user.user.email}`;
                 }
 
-                // Hide loading and show redirect message
+                // Hide loading and show form
                 loadingDiv.style.display = 'none';
-                
-                // Show redirect message
-                const container = document.querySelector('.container');
-                container.innerHTML = `
-                    <div class="logo">🥄</div>
-                    <h1 class="title">Weiterleitung zur App</h1>
-                    <p class="subtitle">Sie werden zur SpoonUp App weitergeleitet, um Ihr Passwort sicher zurückzusetzen.</p>
-                    
-                    <div class="success">
-                        <h3>✅ Reset-Code erhalten!</h3>
-                        <p>Ihr Passwort-Reset wurde erfolgreich autorisiert.</p>
-                    </div>
-                    
-                    <a href="spoonup://reset-password?code=${finalCode}" class="app-link" style="display: block; margin: 2rem 0;">
-                        📱 SpoonUp App öffnen
-                    </a>
-                    
-                    <div class="info">
-                        <strong>💡 Was passiert jetzt:</strong><br>
-                        1. Die SpoonUp App öffnet sich automatisch<br>
-                        2. Sie können dort sicher Ihr neues Passwort eingeben<br>
-                        3. Ihr Passwort wird verschlüsselt aktualisiert
-                    </div>
-                    
-                    <div style="text-align: center; margin-top: 2rem;">
-                        <button onclick="window.location.href='spoonup://reset-password?code=${finalCode}'" class="btn">
-                            🔄 Nochmal versuchen
-                        </button>
-                    </div>
-                    
-                    <div class="info" style="margin-top: 2rem;">
-                        <strong>🔒 Sicherheitshinweis:</strong> Aus Sicherheitsgründen wird das Passwort-Reset in der App durchgeführt, wo eine sichere Verbindung zu Supabase gewährleistet ist.
-                    </div>
-                `;
-                
-                // Auto-redirect after 3 seconds
-                setTimeout(() => {
-                    window.location.href = `spoonup://reset-password?code=${finalCode}`;
-                }, 3000);
+                resetForm.style.display = 'block';
 
             } catch (error) {
                 console.error('❌ Error initializing password reset:', error);
@@ -373,6 +363,34 @@
                     errorDiv.style.display = 'block';
                 }
             }
+        }
+        
+        function showManualResetInstructions() {
+            const container = document.querySelector('.container');
+            container.innerHTML = `
+                <div class="logo">🥄</div>
+                <h1 class="title">Passwort zurücksetzen</h1>
+                <p class="subtitle">Bitte verwenden Sie die SpoonUp App, um Ihr Passwort zurückzusetzen.</p>
+                
+                <div class="info">
+                    <h3>💡 So setzen Sie Ihr Passwort zurück:</h3>
+                    <ol style="text-align: left; margin: 1rem 0;">
+                        <li>Öffnen Sie die SpoonUp App</li>
+                        <li>Gehen Sie zur Anmeldung</li>
+                        <li>Klicken Sie auf "Passwort vergessen?"</li>
+                        <li>Geben Sie Ihre E-Mail-Adresse ein</li>
+                        <li>Folgen Sie den Anweisungen in der neuen E-Mail</li>
+                    </ol>
+                </div>
+                
+                <a href="spoonup://" class="app-link" style="display: block; margin: 2rem 0;">
+                    📱 SpoonUp App öffnen
+                </a>
+                
+                <div class="info">
+                    <strong>🔒 Hinweis:</strong> Aus Sicherheitsgründen muss das Passwort-Reset über die App erfolgen.
+                </div>
+            `;
         }
 
         // Handle form submission
