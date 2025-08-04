@@ -1,490 +1,116 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
   <head>
-    <title>SpoonUp - Passwort zurücksetzen</title>
-    <link rel="canonical" href="https://roadrider42.github.io/service/reset-external.html">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-      }
-      
-      .container {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        max-width: 500px;
-        width: 100%;
-        overflow: hidden;
-      }
-      
-      .header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        text-align: center;
-        padding: 40px 20px;
-      }
-      
-      .header h1 {
-        font-size: 2.5rem;
-        margin-bottom: 10px;
-      }
-      
-      .header p {
-        font-size: 1.1rem;
-        opacity: 0.9;
-      }
-      
-      .content {
-        padding: 40px;
-      }
-      
-      .loading {
-        text-align: center;
-        color: #666;
-        font-size: 1.1rem;
-      }
-      
-      .error {
-        background: #fee;
-        border: 1px solid #fcc;
-        border-radius: 8px;
-        padding: 20px;
-        color: #c33;
-        text-align: center;
-        margin-bottom: 20px;
-      }
-      
-      .success {
-        background: #efe;
-        border: 1px solid #cfc;
-        border-radius: 8px;
-        padding: 20px;
-        color: #363;
-        text-align: center;
-        margin-bottom: 20px;
-      }
-      
-      .form-group {
-        margin-bottom: 20px;
-      }
-      
-      .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 600;
-        color: #333;
-      }
-      
-      .form-group input {
-        width: 100%;
-        padding: 12px;
-        border: 2px solid #ddd;
-        border-radius: 8px;
-        font-size: 1rem;
-        transition: border-color 0.3s;
-      }
-      
-      .form-group input:focus {
-        outline: none;
-        border-color: #667eea;
-      }
-      
-      .btn {
-        width: 100%;
-        padding: 15px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: transform 0.2s;
-      }
-      
-      .btn:hover {
-        transform: translateY(-2px);
-      }
-      
-      .btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-      }
-      
-      .info-box {
-        background: #f8f9fa;
-        border-radius: 8px;
-        padding: 20px;
-        margin-top: 20px;
-        color: #666;
-        font-size: 0.9rem;
-      }
-      
-      .info-box h4 {
-        color: #333;
-        margin-bottom: 10px;
-      }
-      
-      .info-box ul {
-        margin-left: 20px;
-      }
-      
-      .info-box li {
-        margin-bottom: 5px;
-      }
-      
-      .app-buttons {
-        text-align: center;
-        margin-top: 30px;
-      }
-      
-      .app-buttons a {
-        display: inline-block;
-        padding: 12px 24px;
-        margin: 5px;
-        text-decoration: none;
-        border-radius: 8px;
-        font-weight: 600;
-        transition: transform 0.2s;
-      }
-      
-      .app-buttons a:hover {
-        transform: translateY(-2px);
-      }
-      
-      .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-      }
-      
-      .btn-secondary {
-        background: #f8f9fa;
-        color: #333;
-        border: 2px solid #ddd;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="header">
-        <h1>🥄 SpoonUp</h1>
-        <p>Passwort zurücksetzen</p>
-      </div>
-      
-      <div class="content">
-        <!-- Loading State -->
-        <div id="loading-state" class="loading">
-          <p>🔄 Reset-Link wird verarbeitet...</p>
-        </div>
-        
-        <!-- Error State -->
-        <div id="error-state" class="error" style="display: none;">
-          <p><strong>❌ Fehler:</strong> <span id="error-message"></span></p>
-        </div>
-        
-        <!-- Success State -->
-        <div id="success-state" class="success" style="display: none;">
-          <p><strong>✅ Erfolgreich:</strong> <span id="success-message"></span></p>
-        </div>
-        
-        <!-- Password Reset Form -->
-        <div id="reset-form" style="display: none;">
-          <h2 style="margin-bottom: 20px; color: #333;">🔐 Neues Passwort erstellen</h2>
-          <p style="color: #666; margin-bottom: 30px;">Erstellen Sie ein neues, sicheres Passwort für Ihr SpoonUp-Konto.</p>
-          
-          <form id="password-form">
-            <div class="form-group">
-              <label for="password">Neues Passwort</label>
-              <input
-                type="password"
-                id="password"
-                placeholder="Mindestens 6 Zeichen"
-                required
-                minlength="6"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="confirmPassword">Passwort bestätigen</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                placeholder="Passwort wiederholen"
-                required
-                minlength="6"
-              />
-            </div>
-
-            <button type="submit" class="btn" id="submit-btn">
-              🔐 Passwort zurücksetzen
-            </button>
-          </form>
-          
-          <div class="info-box">
-            <h4>🔒 Sicherheitshinweise:</h4>
-            <ul>
-              <li>Verwenden Sie ein starkes, einzigartiges Passwort</li>
-              <li>Mischen Sie Buchstaben, Zahlen und Sonderzeichen</li>
-              <li>Verwenden Sie mindestens 8 Zeichen</li>
-              <li>Teilen Sie Ihr Passwort niemals mit anderen</li>
-            </ul>
-          </div>
-        </div>
-        
-        <!-- App Download/Open Section -->
-        <div id="app-section" style="display: none;">
-          <div class="app-buttons">
-            <a href="#" id="open-app-btn" class="btn-primary" style="display: none;">
-              📱 SpoonUp App öffnen
-            </a>
-            <a href="https://testflight.apple.com/join/YOUR_TESTFLIGHT_ID" id="download-app-btn" class="btn-secondary">
-              📲 SpoonUp TestFlight
-            </a>
-          </div>
-        </div>
-        
-        <!-- Default State -->
-        <div id="default-state">
-          <h2>👋 Willkommen!</h2>
-          <p>Diese Seite verarbeitet Passwort-Reset-Links von SpoonUp.</p>
-          <p>Verwenden Sie den Link aus Ihrer E-Mail, um Ihr Passwort zurückzusetzen.</p>
-        </div>
-      </div>
-    </div>
-
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>spoonup – Passwort zurücksetzen</title>
+    <!-- Nunito Sans (Google Fonts) -->
+    <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:400,600,700,800&display=swap" rel="stylesheet">
+    <!-- Tailwind CDN (für schnelles Prototyping) -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      // Supabase Configuration for SpoonUp
-      const SUPABASE_URL = 'https://ddbrdvwguyhnfvicheqn.supabase.co';
-      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkYnJkdndndXlobmZ2aWNoZXFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyOTc0NzcsImV4cCI6MjA2ODg3MzQ3N30.Cif5HWsuFX6hqxxwJRa5mOvny56g5bbxznjlqLX1V74';
-      
-      // Initialize Supabase client
-      class SupabaseClient {
-        constructor(url, key) {
-          this.url = url;
-          this.key = key;
-        }
-        
-        async updatePassword(accessToken, refreshToken, newPassword) {
-          const response = await fetch(`${this.url}/auth/v1/user`, {
-            method: 'PUT',
-            headers: {
-              'apikey': this.key,
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json'
+      // Custom SpoonUp CI mit Tailwind
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'spoonup-braun': '#3C2A1A',
+              'spoonup-offwhite': '#FAFAF6',
+              'spoonup-gelb': '#FFD44D',
+              'spoonup-darkgray': '#444444',
+              'spoonup-lightgray': '#E0E0E0',
             },
-            body: JSON.stringify({
-              password: newPassword
-            })
-          });
-          
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || `HTTP error! status: ${response.status}`);
-          }
-          
-          return await response.json();
-        }
-        
-        async verifyOtp(token, type = 'recovery') {
-          const response = await fetch(`${this.url}/auth/v1/verify`, {
-            method: 'POST',
-            headers: {
-              'apikey': this.key,
-              'Content-Type': 'application/json'
+            fontFamily: {
+              nunito: ['"Nunito Sans"', 'Arial', 'sans-serif'],
             },
-            body: JSON.stringify({
-              token: token,
-              type: type
-            })
-          });
-          
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || `HTTP error! status: ${response.status}`);
-          }
-          
-          return await response.json();
-        }
-      }
-      
-      // Initialize client
-      const supabase = new SupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      
-      // DOM Elements
-      const loadingState = document.getElementById('loading-state');
-      const errorState = document.getElementById('error-state');
-      const successState = document.getElementById('success-state');
-      const resetForm = document.getElementById('reset-form');
-      const defaultState = document.getElementById('default-state');
-      const appSection = document.getElementById('app-section');
-      const passwordForm = document.getElementById('password-form');
-      const submitBtn = document.getElementById('submit-btn');
-      
-      // Global variables
-      let accessToken = null;
-      let refreshToken = null;
-      
-      // Check URL parameters when page loads
-      window.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM loaded');
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('access_token') || urlParams.get('token');
-        const refresh = urlParams.get('refresh_token');
-        const type = urlParams.get('type');
-        
-        console.log('URL params:', { token: token ? 'present' : 'missing', refresh: refresh ? 'present' : 'missing', type });
-        
-        if (token && type === 'recovery') {
-          console.log('Recovery token found, processing...');
-          processResetToken(token, refresh);
-        } else if (token) {
-          console.log('Token found, processing...');
-          processResetToken(token, refresh);
-        } else {
-          console.log('No reset token found');
-          hideLoading();
-        }
-        
-        setupDeepLinking();
-      });
-      
-      function hideLoading() {
-        console.log('Hiding loading state');
-        loadingState.style.display = 'none';
-      }
-      
-      function showError(message) {
-        console.error('Error:', message);
-        hideLoading();
-        document.getElementById('error-message').textContent = message;
-        errorState.style.display = 'block';
-        defaultState.style.display = 'none';
-        resetForm.style.display = 'none';
-      }
-      
-      function showSuccess(message) {
-        console.log('Success:', message);
-        hideLoading();
-        document.getElementById('success-message').textContent = message;
-        successState.style.display = 'block';
-        resetForm.style.display = 'none';
-        appSection.style.display = 'block';
-      }
-      
-      function showResetForm() {
-        console.log('Showing reset form');
-        hideLoading();
-        defaultState.style.display = 'none';
-        resetForm.style.display = 'block';
-      }
-      
-      async function processResetToken(token, refresh) {
-        try {
-          console.log('Processing reset token...');
-          
-          // Verify the token with Supabase
-          const result = await supabase.verifyOtp(token, 'recovery');
-          console.log('Token verification result:', result);
-          
-          if (result.access_token) {
-            accessToken = result.access_token;
-            refreshToken = result.refresh_token || refresh;
-            showResetForm();
-          } else {
-            throw new Error('Ungültiger oder abgelaufener Reset-Link');
-          }
-          
-        } catch (error) {
-          console.error('Error processing reset token:', error);
-          showError(error.message || 'Reset-Link konnte nicht verarbeitet werden');
-        }
-      }
-      
-      // Handle password form submission
-      passwordForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        
-        if (password.length < 6) {
-          showError('Passwort muss mindestens 6 Zeichen lang sein.');
-          return;
-        }
-        
-        if (password !== confirmPassword) {
-          showError('Passwörter stimmen nicht überein.');
-          return;
-        }
-        
-        if (!accessToken) {
-          showError('Kein gültiger Reset-Token gefunden.');
-          return;
-        }
-        
-        submitBtn.disabled = true;
-        submitBtn.textContent = '🔄 Wird gespeichert...';
-        
-        try {
-          console.log('Updating password...');
-          await supabase.updatePassword(accessToken, refreshToken, password);
-          
-          console.log('Password updated successfully');
-          showSuccess('Passwort erfolgreich zurückgesetzt! Sie können sich jetzt mit Ihrem neuen Passwort anmelden.');
-          
-        } catch (error) {
-          console.error('Error updating password:', error);
-          showError(error.message || 'Fehler beim Zurücksetzen des Passworts');
-          submitBtn.disabled = false;
-          submitBtn.textContent = '🔐 Passwort zurücksetzen';
-        }
-      });
-      
-      function setupDeepLinking() {
-        console.log('Setting up deep linking');
-        const userAgent = navigator.userAgent;
-        const isIOS = /iPad|iPhone|iPod/.test(userAgent);
-        
-        if (isIOS) {
-          console.log('iOS device detected, showing app open button');
-          const openAppBtn = document.getElementById('open-app-btn');
-          
-          if (openAppBtn) {
-            openAppBtn.style.display = 'inline-block';
-            
-            openAppBtn.addEventListener('click', function(e) {
-              e.preventDefault();
-              console.log('Opening SpoonUp app...');
-              
-              // Try to open the app using custom URL scheme
-              window.location.href = 'spoonup://reset-complete';
-              
-              // If app is not installed, redirect to App Store after a short delay
-              setTimeout(() => {
-                if (!document.hidden && !document.webkitHidden) {
-                  console.log('Redirecting to TestFlight');
-                  window.location.href = 'https://testflight.apple.com/join/YOUR_TESTFLIGHT_ID';
-                }
-              }, 500);
-            });
+            borderRadius: {
+              xl: '1rem',
+            }
           }
         }
       }
     </script>
+    <style>
+      body {
+        font-family: 'Nunito Sans', Arial, sans-serif;
+        background: #FAFAF6;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-spoonup-offwhite flex flex-col">
+    <!-- Header -->
+    <header class="bg-spoonup-offwhite px-8 py-4 flex items-center shadow">
+      <img src="/logo.svg" alt="spoonup logo" class="h-10 w-10 rounded-full mr-4 shadow-sm" />
+      <h1 class="text-2xl font-extrabold font-nunito text-spoonup-braun tracking-wide">spoonup</h1>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="flex-1 flex items-center justify-center px-2">
+      <div class="w-full max-w-md bg-white rounded-xl shadow-2xl p-8 mt-8">
+        <div class="mb-8 text-center">
+          <span class="inline-block rounded-full bg-spoonup-gelb/40 p-4 mb-2">
+            <img src="/logo.svg" alt="Spoon Icon" class="h-8 w-8" />
+          </span>
+          <h2 class="font-nunito text-2xl font-bold text-spoonup-braun mb-1">
+            Passwort zurücksetzen
+          </h2>
+          <p class="font-nunito text-base text-spoonup-darkgray">Erstelle ein neues, sicheres Passwort für dein Konto.</p>
+        </div>
+        
+        <!-- Reset-Formular -->
+        <form class="space-y-6">
+          <div>
+            <label for="password" class="block mb-2 font-nunito font-semibold text-spoonup-braun">
+              Neues Passwort
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Mindestens 8 Zeichen"
+              minlength="8"
+              required
+              class="w-full bg-spoonup-offwhite border border-spoonup-lightgray rounded-xl px-4 py-3 font-nunito text-base placeholder-spoonup-darkgray focus:border-spoonup-braun focus:ring-1 focus:ring-spoonup-braun transition"
+            />
+          </div>
+          <div>
+            <label for="password2" class="block mb-2 font-nunito font-semibold text-spoonup-braun">
+              Passwort bestätigen
+            </label>
+            <input
+              id="password2"
+              name="password2"
+              type="password"
+              placeholder="Passwort wiederholen"
+              minlength="8"
+              required
+              class="w-full bg-spoonup-offwhite border border-spoonup-lightgray rounded-xl px-4 py-3 font-nunito text-base placeholder-spoonup-darkgray focus:border-spoonup-braun focus:ring-1 focus:ring-spoonup-braun transition"
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full bg-spoonup-braun text-white rounded-xl px-6 py-3 font-nunito font-semibold text-lg hover:bg-spoonup-gelb hover:text-spoonup-braun transition"
+          >
+            🔐 Passwort zurücksetzen
+          </button>
+        </form>
+        
+        <!-- Sicherheitshinweise -->
+        <div class="mt-8 bg-spoonup-gelb/10 rounded-xl p-4 font-nunito text-spoonup-darkgray text-sm">
+          <h4 class="font-bold text-spoonup-braun mb-2">🔒 Sicherheitstipps:</h4>
+          <ul class="list-disc list-inside space-y-1">
+            <li>Verwende ein starkes, einzigartiges Passwort</li>
+            <li>Mische Buchstaben, Zahlen und Sonderzeichen</li>
+            <li>Mindestens 8 Zeichen</li>
+            <li>Teile dein Passwort niemals mit anderen</li>
+          </ul>
+        </div>
+      </div>
+    </main>
+    
+    <!-- Footer (optional) -->
+    <footer class="text-center py-4 text-xs text-spoonup-darkgray font-nunito mt-12">
+      &copy; 2025 spoonup. Alle Rechte vorbehalten.
+    </footer>
   </body>
 </html>
