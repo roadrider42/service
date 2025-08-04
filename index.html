@@ -2,9 +2,9 @@
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>spoonup – Passwort zurücksetzen</title>
- <!-- Favicon für moderne Browser -->
+    <!-- Favicon für moderne Browser -->
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png"> <!-- Hinzugefügt -->
 
@@ -14,114 +14,131 @@
     <!-- Apple Touch Icon für iOS -->
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-180x180.png">
 
-  
     <!-- Nunito Sans (Google Fonts) -->
     <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:400,600,700,800&display=swap" rel="stylesheet">
-    <!-- Tailwind CDN (für schnelles Prototyping) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      // Custom SpoonUp CI mit Tailwind
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              'spoonup-braun': '#3C2A1A',
-              'spoonup-offwhite': '#FAFAF6',
-              'spoonup-gelb': '#FFD44D',
-              'spoonup-darkgray': '#444444',
-              'spoonup-lightgray': '#E0E0E0',
-            },
-            fontFamily: {
-              nunito: ['"Nunito Sans"', 'Arial', 'sans-serif'],
-            },
-            borderRadius: {
-              xl: '1rem',
-            }
-          }
-        }
-      }
-    </script>
     <style>
       body {
         font-family: 'Nunito Sans', Arial, sans-serif;
-        background: #FAFAF6;
+        background-color: #FAFAF6;
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      header {
+        background-color: #FAFAF6;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      header img {
+        height: 40px;
+        width: 40px;
+        border-radius: 20px;
+        margin-right: 1rem;
+      }
+      h1 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #3C2A1A;
+      }
+      main {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+      }
+      .container {
+        width: 100%;
+        max-width: 400px;
+        background-color: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        padding: 2rem;
+        margin-top: 2rem;
+      }
+      .container h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #3C2A1A;
+        margin-bottom: 0.5rem;
+      }
+      .container p {
+        color: #444444;
+        font-size: 1rem;
+      }
+      img.spoon-icon {
+        height: 32px;
+        width: 32px;
+      }
+      input {
+        width: 100%;
+        background-color: #FAFAF6;
+        border: 1px solid #E0E0E0;
+        border-radius: 0.75rem;
+        padding: 0.75rem;
+        font-family: 'Nunito Sans', Arial, sans-serif;
+        color: #444444;
+      }
+      button {
+        width: 100%;
+        background-color: #3C2A1A;
+        color: white;
+        border-radius: 0.75rem;
+        padding: 0.75rem;
+        font-family: 'Nunito Sans', Arial, sans-serif;
+        font-size: 1.125rem;
+        font-weight: 600;
+      }
+      button:hover {
+        background-color: #FFD44D;
+        color: #3C2A1A;
+      }
+      footer {
+        text-align: center;
+        padding: 1rem;
+        color: #444444;
+        font-size: 0.75rem;
+        margin-top: 3rem;
       }
     </style>
   </head>
-  <body class="min-h-screen bg-spoonup-offwhite flex flex-col">
+  <body>
     <!-- Header -->
-    <header class="bg-spoonup-offwhite px-8 py-4 flex items-center shadow">
-      <img src="/logo.svg" alt="spoonup logo" class="h-10 w-10 rounded-full mr-4 shadow-sm" />
-      <h1 class="text-2xl font-extrabold font-nunito text-spoonup-braun tracking-wide">spoonup</h1>
+    <header>
+      <img src="logo.svg" alt="spoonup logo" />
+      <h1>spoonup</h1>
     </header>
     
     <!-- Main Content -->
-    <main class="flex-1 flex items-center justify-center px-2">
-      <div class="w-full max-w-md bg-white rounded-xl shadow-2xl p-8 mt-8">
+    <main>
+      <div class="container">
         <div class="mb-8 text-center">
-          <span class="inline-block rounded-full bg-spoonup-gelb/40 p-4 mb-2">
-            <img src="/logo.svg" alt="Spoon Icon" class="h-8 w-8" />
+          <span style="display: inline-block; background-color: rgba(255, 212, 77, 0.25); border-radius: 9999px; padding: 1rem; margin-bottom: 0.5rem;">
+            <img src="logo.svg" alt="Spoon Icon" class="spoon-icon" />
           </span>
-          <h2 class="font-nunito text-2xl font-bold text-spoonup-braun mb-1">
-            Passwort zurücksetzen
-          </h2>
-          <p class="font-nunito text-base text-spoonup-darkgray">Erstelle ein neues, sicheres Passwort für dein Konto.</p>
+          <h2>Passwort zurücksetzen</h2>
+          <p>Erstelle ein neues, sicheres Passwort für dein Konto.</p>
         </div>
         
         <!-- Reset-Formular -->
-        <form class="space-y-6">
+        <form>
           <div>
-            <label for="password" class="block mb-2 font-nunito font-semibold text-spoonup-braun">
-              Neues Passwort
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="Mindestens 8 Zeichen"
-              minlength="8"
-              required
-              class="w-full bg-spoonup-offwhite border border-spoonup-lightgray rounded-xl px-4 py-3 font-nunito text-base placeholder-spoonup-darkgray focus:border-spoonup-braun focus:ring-1 focus:ring-spoonup-braun transition"
-            />
+            <label for="password">Neues Passwort</label>
+            <input id="password" name="password" type="password" placeholder="Mindestens 8 Zeichen" minlength="8" required />
           </div>
           <div>
-            <label for="password2" class="block mb-2 font-nunito font-semibold text-spoonup-braun">
-              Passwort bestätigen
-            </label>
-            <input
-              id="password2"
-              name="password2"
-              type="password"
-              placeholder="Passwort wiederholen"
-              minlength="8"
-              required
-              class="w-full bg-spoonup-offwhite border border-spoonup-lightgray rounded-xl px-4 py-3 font-nunito text-base placeholder-spoonup-darkgray focus:border-spoonup-braun focus:ring-1 focus:ring-spoonup-braun transition"
-            />
+            <label for="password2">Passwort bestätigen</label>
+            <input id="password2" name="password2" type="password" placeholder="Passwort wiederholen" minlength="8" required />
           </div>
-          <button
-            type="submit"
-            class="w-full bg-spoonup-braun text-white rounded-xl px-6 py-3 font-nunito font-semibold text-lg hover:bg-spoonup-gelb hover:text-spoonup-braun transition"
-          >
-            🔐 Passwort zurücksetzen
-          </button>
+          <button type="submit">🔐 Passwort zurücksetzen</button>
         </form>
-        
-        <!-- Sicherheitshinweise -->
-        <div class="mt-8 bg-spoonup-gelb/10 rounded-xl p-4 font-nunito text-spoonup-darkgray text-sm">
-          <h4 class="font-bold text-spoonup-braun mb-2">🔒 Sicherheitstipps:</h4>
-          <ul class="list-disc list-inside space-y-1">
-            <li>Verwende ein starkes, einzigartiges Passwort</li>
-            <li>Mische Buchstaben, Zahlen und Sonderzeichen</li>
-            <li>Mindestens 8 Zeichen</li>
-            <li>Teile dein Passwort niemals mit anderen</li>
-          </ul>
-        </div>
       </div>
     </main>
     
-    <!-- Footer (optional) -->
-    <footer class="text-center py-4 text-xs text-spoonup-darkgray font-nunito mt-12">
-      &copy; 2025 spoonup. Alle Rechte vorbehalten.
-    </footer>
+    <!-- Footer -->
+    <footer>&copy; 2025 spoonup. Alle Rechte vorbehalten.</footer>
   </body>
 </html>
